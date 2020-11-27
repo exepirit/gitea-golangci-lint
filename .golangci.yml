@@ -1,0 +1,56 @@
+run:
+  concurrency: 1
+  timeout: 1m
+  issues-exit-code: 1
+  tests: true
+  skip-files: []
+
+output:
+  uniq-by-line: true
+  print-linter-name: true
+
+issues:
+  exclude:
+    - Using the variable on range scope `tt` in function literal
+
+linters:
+  disable-all: true
+  enable:
+    - bodyclose
+    # - deadcode
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - exhaustive
+    - funlen
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - golint
+    - gomnd
+    - goprintffuncname
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - interfacer
+    - lll
+    - misspell
+    - nakedret
+    # - noctx
+    - nolintlint
+    - rowserrcheck
+    - scopelint
+    - staticcheck
+    - structcheck
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unparam
+    # - unused
+    - varcheck
+    - whitespace
