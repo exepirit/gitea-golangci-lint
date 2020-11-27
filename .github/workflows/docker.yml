@@ -24,7 +24,6 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         with:
-          push: true
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: exepir1t/gitea-golangci-lint:latest
