@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -15,12 +14,7 @@ type Gitea struct {
 	BaseURL  string
 	Client   *http.Client
 	Username string
-	Password string
-}
-
-func basicAuth(username, password string) string {
-	auth := username + ":" + password
-	return base64.StdEncoding.EncodeToString([]byte(auth))
+	Token    string
 }
 
 func checkStatusCode(resp *http.Response) error {
@@ -32,7 +26,6 @@ func checkStatusCode(resp *http.Response) error {
 
 func (gitea Gitea) putHeaders(req *http.Request) {
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Basic "+basicAuth(gitea.Username, gitea.Password))
 }
 
 func (gitea Gitea) SendReview(repo string, pullIndex int, review *Review) error {
@@ -41,7 +34,7 @@ func (gitea Gitea) SendReview(repo string, pullIndex int, review *Review) error 
 		return errors.WithStack(err)
 	}
 
-	url := fmt.Sprintf("%s/api/v1/repos/%s/pulls/%d/reviews", gitea.BaseURL, repo, pullIndex)
+	url := fmt.Sprintf("%s/api/v1/repos/%s/pulls/%d/reviews?access_token=%s", gitea.BaseURL, repo, pullIndex, gitea.Token)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
 	if err != nil {
 		return errors.WithStack(err)
@@ -76,7 +69,7 @@ func (gitea Gitea) DiscardPreviousReviews(repo string, pullIndex int) error {
 }
 
 func (gitea Gitea) GetAllReviews(repo string, pullIndex int) ([]PullReview, error) {
-	url := fmt.Sprintf("%s/api/v1/repos/%s/pulls/%d/reviews", gitea.BaseURL, repo, pullIndex)
+	url := fmt.Sprintf("%s/api/v1/repos/%s/pulls/%d/reviews?access_token=%s", gitea.BaseURL, repo, pullIndex, gitea.Token)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -110,7 +103,7 @@ func (gitea Gitea) GetAllReviews(repo string, pullIndex int) ([]PullReview, erro
 }
 
 func (gitea Gitea) DiscardReview(repo string, pullIndex int, reviewIndex int) error {
-	url := fmt.Sprintf("%s/api/v1/repos/%s/pulls/%d/reviews/%d", gitea.BaseURL, repo, pullIndex, reviewIndex)
+	url := fmt.Sprintf("%s/api/v1/repos/%s/pulls/%d/reviews/%d?access_token=%s", gitea.BaseURL, repo, pullIndex, reviewIndex, gitea.Token)
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		return errors.WithStack(err)
