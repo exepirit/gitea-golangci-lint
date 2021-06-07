@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -35,6 +36,7 @@ func (gitea Gitea) SendReview(repo string, pullIndex int, review *Review) error 
 	}
 
 	url := fmt.Sprintf("%s/api/v1/repos/%s/pulls/%d/reviews?access_token=%s", gitea.BaseURL, repo, pullIndex, gitea.Token)
+	log.Println("Send Review To: " + url)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(reqBody))
 	if err != nil {
 		return errors.WithStack(err)
@@ -70,6 +72,7 @@ func (gitea Gitea) DiscardPreviousReviews(repo string, pullIndex int) error {
 
 func (gitea Gitea) GetAllReviews(repo string, pullIndex int) ([]PullReview, error) {
 	url := fmt.Sprintf("%s/api/v1/repos/%s/pulls/%d/reviews?access_token=%s", gitea.BaseURL, repo, pullIndex, gitea.Token)
+	log.Println("Get All Reviews: " + url)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -104,6 +107,7 @@ func (gitea Gitea) GetAllReviews(repo string, pullIndex int) ([]PullReview, erro
 
 func (gitea Gitea) DiscardReview(repo string, pullIndex int, reviewIndex int) error {
 	url := fmt.Sprintf("%s/api/v1/repos/%s/pulls/%d/reviews/%d?access_token=%s", gitea.BaseURL, repo, pullIndex, reviewIndex, gitea.Token)
+	log.Println("Discard Review: " + url)
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		return errors.WithStack(err)
