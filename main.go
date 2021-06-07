@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/caarlos0/env"
@@ -12,7 +13,7 @@ import (
 type config struct {
 	GiteaURL      string `env:"GITEA_URL,required"`
 	GiteaUser     string `env:"GITEA_USER,required"`
-	GiteaPassword string `env:"GITEA_PWD,required"`
+	GiteaToken    string `env:"GITEA_TOKEN,required"`
 	Repo          string `env:"GIT_REPO,required"`
 	PullRequestID int    `env:"PULL_REQUEST,required"`
 	HTTPTimeout   int    `env:"HTTP_TIMEOUT" envDefault:"30"`
@@ -26,12 +27,12 @@ func main() {
 	}
 
 	gitea := Gitea{
-		BaseURL: cfg.GiteaURL,
+		BaseURL: strings.TrimSuffix(cfg.GiteaURL, "/"),
 		Client: &http.Client{
 			Timeout: time.Duration(cfg.HTTPTimeout) * time.Second,
 		},
 		Username: cfg.GiteaUser,
-		Password: cfg.GiteaPassword,
+		Token:    cfg.GiteaToken,
 	}
 
 	issues := ReadIssues(os.Stdin)
