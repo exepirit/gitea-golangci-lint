@@ -1,11 +1,13 @@
-# Gitea-Golangci-Lint
+# gitea-golangci-lint
 
-This lib can send golangci-lint issues to gitea as pull request reviews. You can visit <https://golangci-lint.run/> to
+![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/exepir1t/gitea-golangci-lint)
+
+This tool can send golangci-lint issues to Gitea as pull request reviews. You can visit <https://golangci-lint.run/> to
 find the golangci-lint configurations.
 
 ## Docker Image
-To check the docker image, visit <https://hub.docker.com/r/newbing/gitea-golangci-lint>
-> docker pull newbing/gitea-golangci-lint
+To check the docker image, visit <https://hub.docker.com/r/exepir1t/gitea-golangci-lint>
+> docker pull exepir1t/gitea-golangci-lint
 
 ## Build
 
@@ -13,47 +15,18 @@ To check the docker image, visit <https://hub.docker.com/r/newbing/gitea-golangc
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o gitea-golangci-lint
 ```
 
-## Configurations
+## Configuration
 
 There are 6 configurations to be configured when you want to run this tool.
 
-### Gitea Server Url
-
-```shell
-export GITEA_URL=https://git.giteaserver.com
-```
-
-> There has not one slash(/) at the end of the url.
-
-### Gitea Username
-
-```shell
-export GITEA_USER=golanglinter
-```
-
-### Gitea AccessToken
-
-```shell
-export GITEA_TOKEN=your_gitea_user_accesstoken
-```
-
-### Git REPO
-
-```shell
-export GIT_REPO=octocat/hello-worId
-```
-
-### Pull Request ID
-
-```shell
-export PULL_REQUEST=123
-```
-
-### Http Timeout
-
-```shell
-export HTTP_TIMEOUT=30
-```
+| Variable | Description | Example |
+| --- | --- | --- |
+| `GITEA_URL` | Gitea server url | `https://try.gitea.io` |
+| `GITEA_USER` | Gitea username | `golanglinter` |
+| `GITEA_TOKEN` | Gitea access token | `your_gitea_user_accesstoken` |
+| `GITEA_REPO` | Repository name, which is inspected | `octocat/hello_world` |
+| `PULL_REQUEST` | Pull request ID | `123` |
+| `HTTP_TIMEOUT` | HTTP requests timeout in seconds | `30` |
 
 ## How to use?
 
@@ -92,8 +65,8 @@ steps:
       - |
         [[ -z "$${DRONE_PULL_REQUEST}" ]] && [[ -s .golangci-lint.log ]] && exit 1
       - exit 0
-  - name: review
-    image: newbing/gitea-golangci-lint:latest
+  - name: push linter review
+    image: exepir1t/gitea-golangci-lint:latest
     pull: if-not-exists
     environment:
       GITEA_URL:
@@ -111,11 +84,9 @@ steps:
         - pull_request
 ```
 
-#### DroneCI's secrets
+Make the `pipeline` in the `.drone.yml` to be run correctly，you should add `secrets` as below:
 
-> Make the `pipeline` in the `.drone.yml` to be run correctly，you should add `secrets` as below:
-
-1. `GITEA_URL`: `GITEA_URL` is origin of `Gitea` server，Like:`https://git.example.com`;
-2. `GITEA_CI_USER`: `GITEA_CI_USER` is the user of `Gitea` server，Like:`gitea`, which has `read` authorization to the
+1. `GITEA_URL`: origin of Gitea server，Like: `https://git.example.com`;
+2. `GITEA_CI_USER`: user of Gitea server，Like: `gitea`, which has `read` authorization to the
    repo;
-3. `GITEA_CI_TOKEN`: `GITEA_CI_TOKEN` is the token of `Gitea` user, which has `read` authorization to the repo;
+3. `GITEA_CI_TOKEN`: token of Gitea user, which has `read` authorization to the repo;
