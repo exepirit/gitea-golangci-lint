@@ -3,6 +3,10 @@
 This lib can send golangci-lint issues to gitea as pull request reviews. You can visit <https://golangci-lint.run/> to
 find the golangci-lint configurations.
 
+## Docker Image
+To check the docker image, visit <https://hub.docker.com/r/newbing/gitea-golangci-lint>
+> docker pull newbing/gitea-golangci-lint
+
 ## Build
 
 ```shell
