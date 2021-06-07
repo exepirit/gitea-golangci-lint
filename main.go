@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/caarlos0/env"
@@ -26,7 +27,7 @@ func main() {
 	}
 
 	gitea := Gitea{
-		BaseURL: cfg.GiteaURL,
+		BaseURL: strings.TrimSuffix(cfg.GiteaURL, "/"),
 		Client: &http.Client{
 			Timeout: time.Duration(cfg.HTTPTimeout) * time.Second,
 		},
