@@ -17,7 +17,7 @@ CGO_ENABLED=0 go build -o gitea-golangci-lint
 
 ## Configuration
 
-There are 6 configurations to be configured when you want to run this tool.
+There are 6 environment variables to be configured when you want to run this tool.
 
 | Variable | Description | Example |
 | --- | --- | --- |
@@ -73,8 +73,6 @@ steps:
       GITEA_TOKEN:
         from_secret: GITEA_CI_TOKEN
     commands:
-      - export GIT_REPO=$DRONE_REPO
-      - export PULL_REQUEST=$DRONE_PULL_REQUEST
       - cat .golangci-lint.log | /bin/gitea-golangci-lint
     when:
       event:
