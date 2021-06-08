@@ -1,53 +1,86 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/caarlos0/env/v6"
+	"github.com/urfave/cli/v2"
 )
 
-type config struct {
-	GiteaURL      string `env:"GITEA_URL,required"`
-	GiteaUser     string `env:"GITEA_USER,required"`
-	GiteaToken    string `env:"GITEA_TOKEN,required"`
-	Repo          string `env:"GIT_REPO,required"`
-	PullRequestID int    `env:"PULL_REQUEST,required"`
-	HTTPTimeout   int    `env:"HTTP_TIMEOUT" envDefault:"30"`
+var app = &cli.App{
+	Name:  "gitea-golangci-lint",
+	Usage: "Sends linter outpus as pull reqeust review",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:    "giteaUrl",
+			Usage:   "Gitea server url",
+			EnvVars: []string{"GITEA_URL", "PLUGIN_URL"},
+		},
+		&cli.StringFlag{
+			Name:    "user",
+			Usage:   "Gitea user name",
+			EnvVars: []string{"GITEA_USER", "PLUGIN_USER"},
+		},
+		&cli.StringFlag{
+			Name:    "token",
+			Usage:   "Gitea access token",
+			EnvVars: []string{"GITEA_TOKEN", "PLUGIN_TOKEN"},
+		},
+		&cli.StringFlag{
+			Name:    "repo",
+			Usage:   "Repository name, which is inspected. E. g. octocat/hello_world",
+			EnvVars: []string{"GITEA_REPO", "DRONE_REPO"},
+		},
+		&cli.IntFlag{
+			Name:    "pullRequest",
+			Usage:   "Pull Request ID",
+			EnvVars: []string{"PULL_REQUEST", "DRONE_PULL_REQUEST"},
+		},
+		&cli.IntFlag{
+			Name:    "httpTimeout",
+			Usage:   "HTTP request timeout in seconds",
+			EnvVars: []string{"HTTP_TIMEOUT"},
+			Value:   30,
+		},
+	},
+	HideVersion: true,
+	Action:      lint,
 }
 
-var cfg config
-
-func main() {
-	if err := env.Parse(&cfg); err != nil {
-		log.Fatal(err)
-	}
-
+func lint(ctx *cli.Context) error {
 	gitea := Gitea{
-		BaseURL: strings.TrimSuffix(cfg.GiteaURL, "/"),
+		BaseURL: strings.TrimSuffix(ctx.String("giteaUrl"), "/"),
 		Client: &http.Client{
-			Timeout: time.Duration(cfg.HTTPTimeout) * time.Second,
+			Timeout: time.Duration(ctx.Int("httpTimeout")) * time.Second,
 		},
-		Username: cfg.GiteaUser,
-		Token:    cfg.GiteaToken,
+		Username: ctx.String("user"),
+		Token:    ctx.String("token"),
 	}
 
 	issues := ReadIssues(os.Stdin)
-	log.Printf("Found %d issues\n", len(issues))
 	review := FormatReview(issues)
 
-	if err := gitea.DiscardPreviousReviews(cfg.Repo, cfg.PullRequestID); err != nil {
-		log.Fatalf("%+v\n", err)
+	if err := gitea.DiscardPreviousReviews(ctx.String("repo"), ctx.Int("pullRequest")); err != nil {
+		return err
 	}
 
-	if err := gitea.SendReview(cfg.Repo, cfg.PullRequestID, review); err != nil {
-		log.Fatalf("%+v\n", err)
+	if err := gitea.SendReview(ctx.String("repo"), ctx.Int("pullRequest"), review); err != nil {
+		return err
 	}
 
 	if len(issues) > 0 {
-		os.Exit(1)
+		return fmt.Errorf("found %d issues", len(issues))
+	}
+
+	return nil
+}
+
+func main() {
+	if err := app.Run(os.Args); err != nil {
+		log.Fatalf("%v\n", err)
 	}
 }
