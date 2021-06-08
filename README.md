@@ -12,7 +12,7 @@ To check the docker image, visit <https://hub.docker.com/r/exepir1t/gitea-golang
 ## Build
 
 ```shell
-GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o gitea-golangci-lint
+CGO_ENABLED=0 go build -o gitea-golangci-lint
 ```
 
 ## Configuration
@@ -54,9 +54,6 @@ steps:
   - name: linter
     image: golangci/golangci-lint:latest-alpine
     pull: if-not-exists
-    environment:
-      GOPROXY:
-        from_secret: GOPROXY
     volumes:
       - name: deps
         path: /go
@@ -78,7 +75,7 @@ steps:
     commands:
       - export GIT_REPO=$DRONE_REPO
       - export PULL_REQUEST=$DRONE_PULL_REQUEST
-      - cat .golangci-lint.log | gitea
+      - cat .golangci-lint.log | /bin/gitea-golangci-lint
     when:
       event:
         - pull_request
