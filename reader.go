@@ -2,12 +2,14 @@ package main
 
 import (
 	"io"
+
+	"github.com/exepirit/gitea-golangci-lint/linter"
 )
 
-func ReadIssues(r io.Reader) []Issue {
-	issues := make([]Issue, 0)
+func ReadIssues(r io.Reader) []linter.Issue {
+	issues := make([]linter.Issue, 0)
 
-	issueScanner := NewLineScanner(r)
+	issueScanner := linter.NewLineScanner(r)
 	for issueScanner.Next() {
 		issues = append(issues, issueScanner.Get())
 	}

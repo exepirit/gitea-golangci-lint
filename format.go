@@ -1,19 +1,23 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/exepirit/gitea-golangci-lint/linter"
+)
 
 const reviewBodyTemplate = `Linter found %d issues.`
 const commentBodyTemplate = `🔔 __%s__ found issue at line %d:
 > %s`
 
-func FormatReview(issues []Issue) *Review {
+func FormatReview(issues []linter.Issue) *Review {
 	if len(issues) > 0 {
 		return formatRequestChangesReview(issues)
 	}
 	return formatApproveReview()
 }
 
-func formatRequestChangesReview(issues []Issue) *Review {
+func formatRequestChangesReview(issues []linter.Issue) *Review {
 	comments := make([]ReviewComment, len(issues))
 	for i, issue := range issues {
 		body := fmt.Sprintf(commentBodyTemplate, issue.LinterName, issue.LineNum, issue.Message)

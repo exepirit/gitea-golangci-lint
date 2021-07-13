@@ -1,4 +1,4 @@
-package main
+package linter
 
 import (
 	"bufio"
@@ -8,12 +8,6 @@ import (
 )
 
 var lineOutputIssueRegex = regexp.MustCompile(`(.+?):(\d+):(\d*):? (.+) \((.+)\)`)
-
-type IssueScanner interface {
-	Next() bool
-	Err() error
-	Get() Issue
-}
 
 func NewLineScanner(r io.Reader) IssueScanner {
 	return &issueLineScanner{
