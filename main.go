@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -64,12 +63,13 @@ func lint(ctx *cli.Context) error {
 	issues := ReadIssues(os.Stdin)
 	review := FormatReview(issues)
 
-	if err := gitea.DiscardPreviousReviews(ctx.String("repo"), ctx.Int("pullRequest")); err != nil {
-		return err
+	err := gitea.DiscardPreviousReviews(ctx.String("repo"), ctx.Int("pullRequest"))
+	if err != nil {
+		return fmt.Errorf("reset previous review: %w", err)
 	}
 
 	if err := gitea.SendReview(ctx.String("repo"), ctx.Int("pullRequest"), review); err != nil {
-		return err
+		return fmt.Errorf("push new automated review: %w", err)
 	}
 
 	if len(issues) > 0 {
@@ -81,6 +81,7 @@ func lint(ctx *cli.Context) error {
 
 func main() {
 	if err := app.Run(os.Args); err != nil {
-		log.Fatalf("%v\n", err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 }
