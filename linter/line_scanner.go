@@ -22,24 +22,18 @@ type issueLineScanner struct {
 }
 
 func (sc *issueLineScanner) Next() bool {
-	if len(sc.scanned) > 0 {
-		return true
-	}
-	sc.scan()
-	return len(sc.scanned) > 0 && sc.err == nil
-}
-
-func (sc *issueLineScanner) scan() {
-	line, err := sc.reader.ReadString('\n')
-	if err != nil {
-		sc.err = err
-		if err != io.EOF {
-			return
+	for len(sc.scanned) == 0 {
+		line, err := sc.reader.ReadString('\n')
+		switch {
+		case len(line) == 0 || err == io.EOF:
+			return false
+		case err != nil:
+			sc.catchError(err)
+			return false
 		}
+		sc.scanned = append(sc.scanned, sc.parseLine(line)...)
 	}
-
-	parsed := sc.parseLine(line)
-	sc.scanned = append(sc.scanned, parsed...)
+	return true
 }
 
 func (issueLineScanner) parseLine(line string) []Issue {
@@ -61,15 +55,16 @@ func (issueLineScanner) parseLine(line string) []Issue {
 	return issues
 }
 
+func (sc *issueLineScanner) catchError(err error) {
+	sc.err = err
+}
+
 func (sc *issueLineScanner) Err() error {
-	if sc.err == io.EOF {
-		return nil
-	}
 	return sc.err
 }
 
 func (sc *issueLineScanner) Get() Issue {
-	if len(sc.scanned) == 0 {
+	if len(sc.scanned) < 1 {
 		panic("scanner does not contain any issue")
 	}
 	issue := sc.scanned[0]

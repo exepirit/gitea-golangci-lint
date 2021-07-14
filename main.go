@@ -52,7 +52,7 @@ var app = &cli.App{
 }
 
 func lint(ctx *cli.Context) error {
-	repo, pullRequestId := ctx.String("repo"), ctx.Int("pullRequest")
+	repo, pullRequestID := ctx.String("repo"), ctx.Int("pullRequest")
 	gitea := Gitea{
 		BaseURL: strings.TrimSuffix(ctx.String("giteaUrl"), "/"),
 		Client: &http.Client{
@@ -71,12 +71,12 @@ func lint(ctx *cli.Context) error {
 		return fmt.Errorf("scan linter output: %w", err)
 	}
 
-	err := gitea.DiscardPreviousReviews(repo, pullRequestId)
+	err := gitea.DiscardPreviousReviews(repo, pullRequestID)
 	if err != nil {
 		return fmt.Errorf("reset previous review: %w", err)
 	}
 
-	err = gitea.SendReview(repo, pullRequestId, FormatReview(issues))
+	err = gitea.SendReview(repo, pullRequestID, FormatReview(issues))
 	if err != nil {
 		return fmt.Errorf("push new automated review: %w", err)
 	}
