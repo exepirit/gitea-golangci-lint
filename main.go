@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/exepirit/gitea-golangci-lint/linter"
 	"github.com/urfave/cli/v2"
 )
 
@@ -51,6 +52,7 @@ var app = &cli.App{
 }
 
 func lint(ctx *cli.Context) error {
+	repo, pullRequestId := ctx.String("repo"), ctx.Int("pullRequest")
 	gitea := Gitea{
 		BaseURL: strings.TrimSuffix(ctx.String("giteaUrl"), "/"),
 		Client: &http.Client{
@@ -60,20 +62,23 @@ func lint(ctx *cli.Context) error {
 		Token:    ctx.String("token"),
 	}
 
-	issues := ReadIssues(os.Stdin)
-	review := FormatReview(issues)
+	var issues []linter.Issue
+	scanner := linter.NewLineScanner(os.Stdin)
+	for scanner.Next() {
+		issues = append(issues, scanner.Get())
+	}
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("scan linter output: %w", err)
+	}
 
-	err := gitea.DiscardPreviousReviews(ctx.String("repo"), ctx.Int("pullRequest"))
+	err := gitea.DiscardPreviousReviews(repo, pullRequestId)
 	if err != nil {
 		return fmt.Errorf("reset previous review: %w", err)
 	}
 
-	if err := gitea.SendReview(ctx.String("repo"), ctx.Int("pullRequest"), review); err != nil {
+	err = gitea.SendReview(repo, pullRequestId, FormatReview(issues))
+	if err != nil {
 		return fmt.Errorf("push new automated review: %w", err)
-	}
-
-	if len(issues) > 0 {
-		return fmt.Errorf("found %d issues", len(issues))
 	}
 
 	return nil
