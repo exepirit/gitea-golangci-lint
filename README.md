@@ -36,6 +36,17 @@ There are 6 environment variables to be configured when you want to run this too
 golangci-lint run | gitea-golangci-lint
 ```
 
+### Support checkstyle input format
+
+```shell
+golangci-lint run --out-format=checkstyle | gitea-golangci-lint --format=checkstyle
+
+# for php lint tools
+# try below command in your composer project, you should install php-cs-fixer and phpstan first
+./vendor/bin/php-cs-fixer fix --config=./.php-cs-fixer.dist.php --dry-run --using-cache=no --format=checkstyle | gitea-golangci-lint --format=checkstyle
+./vendor/bin/phpstan --error-format=checkstyle | gitea-golangci-lint --format=checkstyle
+```
+
 ### Run with Drone docker pipeline
 
 Below is a drone task configuration, it may help you to config your drone task.
