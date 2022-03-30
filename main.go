@@ -52,6 +52,12 @@ var app = &cli.App{
 			EnvVars: []string{"LINT_FORMAT"},
 			Value:   "",
 		},
+		&cli.StringFlag{
+			Name:    "status",
+			Usage:   "The context to send commit status, empty will not send the commit status",
+			EnvVars: []string{"STATUS_CONTEXT"},
+			Value:   "",
+		},
 	},
 	HideVersion: true,
 	Action:      lint,
@@ -59,7 +65,7 @@ var app = &cli.App{
 
 func lint(ctx *cli.Context) error {
 	repo, pullRequestID := ctx.String("repo"), ctx.Int("pullRequest")
-	format := ctx.String("format")
+	format, statusCtx := ctx.String("format"), ctx.String("status")
 	gitea := Gitea{
 		BaseURL: strings.TrimSuffix(ctx.String("giteaUrl"), "/"),
 		Client: &http.Client{
@@ -95,6 +101,21 @@ func lint(ctx *cli.Context) error {
 	err = gitea.SendReview(repo, pullRequestID, FormatReview(issues))
 	if err != nil {
 		return fmt.Errorf("push new automated review: %w", err)
+	}
+
+	if statusCtx != "" {
+		// send commit status if provide the context
+		if len(issues) > 0 {
+			err = gitea.SendCommitStatus(repo, pullRequestID, statusCtx, StatusFailure)
+			if err != nil {
+				return fmt.Errorf("send commit status failed: %w", err)
+			}
+		} else {
+			err = gitea.SendCommitStatus(repo, pullRequestID, statusCtx, StatusSuccess)
+			if err != nil {
+				return fmt.Errorf("send commit status failed: %w", err)
+			}
+		}
 	}
 
 	return nil
