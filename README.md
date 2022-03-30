@@ -19,14 +19,16 @@ CGO_ENABLED=0 go build -o gitea-golangci-lint
 
 There are 6 environment variables to be configured when you want to run this tool.
 
-| Variable | Description | Example |
-| --- | --- | --- |
-| `GITEA_URL` | Gitea server url | `https://try.gitea.io` |
-| `GITEA_USER` | Gitea username | `golanglinter` |
-| `GITEA_TOKEN` | Gitea access token | `your_gitea_user_accesstoken` |
-| `GITEA_REPO` | Repository name, which is inspected | `octocat/hello_world` |
-| `PULL_REQUEST` | Pull request ID | `123` |
-| `HTTP_TIMEOUT` | HTTP requests timeout in seconds | `30` |
+| Variable | Description                                            | Example                       |
+| --- |--------------------------------------------------------|-------------------------------|
+| `GITEA_URL` | Gitea server url                                       | `https://try.gitea.io`        |
+| `GITEA_USER` | Gitea username                                         | `golanglinter`                |
+| `GITEA_TOKEN` | Gitea access token                                     | `your_gitea_user_accesstoken` |
+| `GITEA_REPO` | Repository name, which is inspected                    | `octocat/hello_world`         |
+| `PULL_REQUEST` | Pull request ID                                        | `123`                         |
+| `HTTP_TIMEOUT` | HTTP requests timeout in seconds                       | `30`                          |
+| `LINT_FORMAT` | The input format from os.Stdin, default to be empty    | `empty or checkstyle`         |
+| `STATUS_CONTEXT` | The gitea's commit status context, empty will not send | `STATUS_CONTEXT`                          |
 
 ## How to use?
 
@@ -34,12 +36,12 @@ There are 6 environment variables to be configured when you want to run this too
 
 ```shell
 golangci-lint run | gitea-golangci-lint
-```
 
-### Support checkstyle input format
-
-```shell
+# Support checkstyle input format
 golangci-lint run --out-format=checkstyle | gitea-golangci-lint --format=checkstyle
+
+# Send commit check status to gitea
+golangci-lint run --out-format=checkstyle | gitea-golangci-lint --format=checkstyle --status=golangci-lint
 
 # for php lint tools
 # try below command in your composer project, you should install php-cs-fixer and phpstan first
