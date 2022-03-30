@@ -115,6 +115,10 @@ func ParseCheckStyleFromXml(checkStyleXML []byte) ([]Issue, error) {
 	if err == nil {
 		for _, file := range checkStyle.File {
 			for _, codingError := range file.Error {
+				linterName := codingError.Source
+				if linterName == "" {
+					linterName = string(codingError.Severity)
+				}
 				issues = append(issues, Issue{
 					Filename:   file.Name,
 					LineNum:    codingError.Line,
