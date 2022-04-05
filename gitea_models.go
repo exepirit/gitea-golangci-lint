@@ -32,3 +32,21 @@ type PullReview struct {
 	SubmittedAt    string                 `json:"submitted_at"`
 	User           map[string]interface{} `json:"user"`
 }
+
+type PullRequest struct {
+	ID        int    `json:"id"`
+	URL       string `json:"url"`
+	Number    int    `json:"number"`
+	Head      Head   `json:"head"`
+	MergeBase string `json:"merge_base"`
+}
+type Head struct {
+	Sha string `json:"sha"`
+}
+
+type CommitStatus struct {
+	Context     string `json:"context"`
+	Description string `json:"description"`
+	State       string `json:"state"`
+	TargetURL   string `json:"target_url"`
+}
